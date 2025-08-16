@@ -77,23 +77,26 @@ const CategoryNode: React.FC<CategoryNodeProps> = ({
   };
 
   return (
-    <div className="select-none">
+    <div className="select-none w-full">
       {/* Category Card */}
       <div
         className={`
-          bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200
-          ${level > 0 ? 'ml-6 border-l-4 border-l-blue-200' : ''}
+          bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200 w-full
+          ${level > 0 ? 'ml-2 sm:ml-4 md:ml-6 border-l-4 border-l-blue-200' : ''}
         `}
-        style={{ marginLeft: level > 0 ? `${level * 24}px` : '0' }}
+        style={{ 
+          marginLeft: level > 0 ? `${Math.min(level * 16, 64)}px` : '0',
+          maxWidth: `calc(100% - ${level > 0 ? Math.min(level * 16, 64) : 0}px)`
+        }}
       >
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 flex-1">
+        <div className="p-3 sm:p-4">
+          <div className="flex items-start sm:items-center justify-between gap-2">
+            <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
               {/* Expand/Collapse Button */}
               {category.children && category.children.length > 0 && (
                 <button
                   onClick={toggleExpanded}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0 mt-1 sm:mt-0"
                 >
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -104,7 +107,7 @@ const CategoryNode: React.FC<CategoryNodeProps> = ({
               )}
 
               {/* Category Icon */}
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 mt-1 sm:mt-0">
                 {category.children && category.children.length > 0 ? (
                   <FolderOpen className="w-5 h-5 text-blue-600" />
                 ) : (
@@ -117,7 +120,7 @@ const CategoryNode: React.FC<CategoryNodeProps> = ({
                 <img
                   src={category.imageUrl}
                   alt={category.name}
-                  className="w-10 h-10 object-cover rounded-lg border border-gray-200"
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0 hidden xs:block"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -125,28 +128,28 @@ const CategoryNode: React.FC<CategoryNodeProps> = ({
               )}
 
               {/* Category Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2 mb-1">
-                  <h3 className="text-sm font-medium text-gray-900 truncate">
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1">
+                  <h3 className="text-sm font-medium text-gray-900 truncate leading-tight">
                     {category.name}
                   </h3>
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(category.status)}`}
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 mt-1 sm:mt-0 w-fit ${getStatusColor(category.status)}`}
                   >
                     {getStatusText(category.status)}
                   </span>
                 </div>
-                <div className="flex items-center space-x-4 text-xs text-gray-500">
-                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded truncate max-w-32 sm:max-w-none">
                     {category.slug}
                   </span>
-                  <span>Sort: {category.sortOrder}</span>
+                  <span className="whitespace-nowrap">Sort: {category.sortOrder}</span>
                   {category.children && category.children.length > 0 && (
-                    <span>{category.children.length} subcategories</span>
+                    <span className="whitespace-nowrap">{category.children.length} sub</span>
                   )}
                 </div>
                 {category.description && (
-                  <p className="text-xs text-gray-600 mt-1 truncate">
+                  <p className="text-xs text-gray-600 mt-1 line-clamp-2 sm:truncate">
                     {category.description}
                   </p>
                 )}
@@ -154,17 +157,17 @@ const CategoryNode: React.FC<CategoryNodeProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center space-x-1 ml-4">
+            <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-1 ml-2 flex-shrink-0">
               <button
                 onClick={handleEdit}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors w-8 h-8 flex items-center justify-center"
                 title="Edit category"
               >
                 <Edit className="w-4 h-4" />
               </button>
               <button
                 onClick={handleDelete}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors w-8 h-8 flex items-center justify-center"
                 title="Delete category"
               >
                 <Trash2 className="w-4 h-4" />
@@ -176,7 +179,7 @@ const CategoryNode: React.FC<CategoryNodeProps> = ({
 
       {/* Children */}
       {isExpanded && category.children && category.children.length > 0 && (
-        <div className="mt-2 space-y-2">
+        <div className="mt-2 space-y-2 overflow-hidden">
           {category.children.map((child) => (
             <CategoryNode
               key={child.id}
@@ -203,7 +206,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
 }) => {
   if (!categories || categories.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-8 sm:py-12">
         <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-500">No categories found</p>
       </div>
@@ -211,7 +214,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4 w-full overflow-hidden">
       {categories.map((category) => (
         <CategoryNode
           key={category.id}

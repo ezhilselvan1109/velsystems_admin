@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Upload, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { CategoryFormData, Category } from '../types/category';
 
 const categorySchema = yup.object({
@@ -131,8 +131,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   const parentOptions = flattenCategories(categories, category?.id);
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Category Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -142,7 +142,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             {...register('name')}
             type="text"
             placeholder="Electronics"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
           />
           {errors.name && (
             <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
@@ -158,7 +158,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             {...register('slug')}
             type="text"
             placeholder="electronics"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
           />
           {errors.slug && (
             <p className="mt-1 text-sm text-red-600">{errors.slug.message}</p>
@@ -175,7 +175,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           {...register('description')}
           rows={3}
           placeholder="Category description..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm resize-none"
         />
         {errors.description && (
           <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
@@ -192,7 +192,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             {...register('imageUrl')}
             type="url"
             placeholder="https://example.com/image.jpg"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
           />
           {errors.imageUrl && (
             <p className="mt-1 text-sm text-red-600">{errors.imageUrl.message}</p>
@@ -200,11 +200,11 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           
           {/* Image Preview */}
           {imagePreview && (
-            <div className="relative inline-block">
+            <div className="relative inline-block mt-2">
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="w-24 h-24 object-cover rounded-lg border border-gray-300"
+                className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border border-gray-300"
                 onError={() => setImagePreview('')}
               />
               <button
@@ -222,7 +222,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Parent Category */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -230,7 +230,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           </label>
           <select
             {...register('parentId')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
           >
             <option value="">None (Top Level)</option>
             {parentOptions.map((cat) => (
@@ -251,7 +251,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           </label>
           <select
             {...register('status')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
           >
             <option value="1">Active</option>
             <option value="0">Inactive</option>
@@ -271,7 +271,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             type="number"
             min="0"
             placeholder="0"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
           />
           {errors.sortOrder && (
             <p className="mt-1 text-sm text-red-600">{errors.sortOrder.message}</p>
@@ -280,19 +280,19 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
       </div>
 
       {/* Form Actions */}
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 pt-6 border-t border-gray-200">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 pt-4 sm:pt-6 border-t border-gray-200">
         <button
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full sm:w-auto px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full sm:w-auto px-4 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? 'Saving...' : category ? 'Update Category' : 'Create Category'}
         </button>

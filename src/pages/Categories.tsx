@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Filter, FolderOpen, Grid, List } from 'lucide-react';
+import { Plus, Search, FolderOpen, Grid, List } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { categoryService } from '../services/category';
 import { Category, CategoryFormData } from '../types/category';
@@ -213,8 +213,8 @@ const Categories: React.FC = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
@@ -224,17 +224,17 @@ const Categories: React.FC = () => {
                 placeholder="Search categories by name or slug..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
               />
             </div>
           </div>
           
           {/* Status Filter */}
-          <div className="sm:w-48">
+          <div className="w-full sm:w-40 md:w-48">
             <select
               value={statusFilter}
               onChange={handleStatusFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -243,16 +243,17 @@ const Categories: React.FC = () => {
           </div>
           
           {/* View Mode Toggle */}
-          <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+          <div className="flex border border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto">
             <button
               onClick={() => setViewMode('tree')}
               className={`px-3 py-2 text-sm font-medium transition-colors ${
                 viewMode === 'tree'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
+              } flex-1 sm:flex-none flex items-center justify-center`}
             >
               <Grid className="w-4 h-4" />
+              <span className="ml-2 sm:hidden">Tree</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -260,22 +261,23 @@ const Categories: React.FC = () => {
                 viewMode === 'table'
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
+              } flex-1 sm:flex-none flex items-center justify-center`}
             >
               <List className="w-4 h-4" />
+              <span className="ml-2 sm:hidden">Table</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Categories Content */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner size="md" />
           </div>
         ) : (
-          <div className="p-6">
+          <div className="p-3 sm:p-4 md:p-6 overflow-x-auto">
             <CategoryTree
               categories={categories || []}
               onEdit={handleEditClick}
