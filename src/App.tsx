@@ -13,6 +13,7 @@ import Login from './pages/Login';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Products = lazy(() => import('./pages/Products'));
 const Categories = lazy(() => import('./pages/Categories'));
+const Brands = lazy(() => import('./pages/Brands'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const Orders = lazy(() => import('./pages/Orders'));
 const Coupons = lazy(() => import('./pages/Coupons'));
@@ -47,6 +48,7 @@ function App() {
                   <Route index element={<Dashboard />} />
                   <Route path="products" element={<Products />} />
                   <Route path="categories" element={<Categories />} />
+                  <Route path="brands" element={<Brands />} />
                   <Route path="inventory" element={<Inventory />} />
                   <Route path="orders" element={<Orders />} />
                   <Route path="marketing/coupons" element={<Coupons />} />
