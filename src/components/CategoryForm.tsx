@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { X } from 'lucide-react';
 import { CategoryFormData, Category } from '../types/category';
+import CustomSelect from './CustomSelect';
 
 const categorySchema = yup.object({
   name: yup
@@ -228,17 +229,31 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Parent Category
           </label>
-          <select
-            {...register('parentId')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
-          >
-            <option value="">None (Top Level)</option>
-            {parentOptions.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+          <div className="block sm:hidden">
+            <select
+              {...register('parentId')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
+            >
+              <option value="">None (Top Level)</option>
+              {parentOptions.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="hidden sm:block">
+            <CustomSelect
+              options={[
+                { value: '', label: 'None (Top Level)' },
+                ...parentOptions.map(cat => ({ value: cat.id, label: cat.name }))
+              ]}
+              value={watch('parentId') || ''}
+              onChange={(value) => setValue('parentId', value)}
+              placeholder="Select parent category"
+              className="text-sm"
+            />
+          </div>
           {errors.parentId && (
             <p className="mt-1 text-sm text-red-600">{errors.parentId.message}</p>
           )}
@@ -249,13 +264,27 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Status *
           </label>
-          <select
-            {...register('status')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
-          >
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
+          <div className="block sm:hidden">
+            <select
+              {...register('status')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
+            >
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+          <div className="hidden sm:block">
+            <CustomSelect
+              options={[
+                { value: '1', label: 'Active' },
+                { value: '0', label: 'Inactive' }
+              ]}
+              value={watch('status')}
+              onChange={(value) => setValue('status', value as '0' | '1')}
+              placeholder="Select status"
+              className="text-sm"
+            />
+          </div>
           {errors.status && (
             <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
           )}

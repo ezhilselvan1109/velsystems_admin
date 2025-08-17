@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Upload, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { BrandFormData, Brand } from '../types/brand';
+import CustomSelect from './CustomSelect';
 
 const brandSchema = yup.object({
   name: yup
@@ -106,13 +107,26 @@ const BrandForm: React.FC<BrandFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Status *
           </label>
-          <select
-            {...register('status')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          >
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
+          <div className="block sm:hidden">
+            <select
+              {...register('status')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            >
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+          <div className="hidden sm:block">
+            <CustomSelect
+              options={[
+                { value: '1', label: 'Active' },
+                { value: '0', label: 'Inactive' }
+              ]}
+              value={watch('status')}
+              onChange={(value) => setValue('status', value as '0' | '1')}
+              placeholder="Select status"
+            />
+          </div>
           {errors.status && (
             <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
           )}

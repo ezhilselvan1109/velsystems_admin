@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, FolderOpen, Grid, List } from 'lucide-react';
+import { Plus, Search, FolderOpen, Grid, List, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { categoryService } from '../services/category';
 import { Category, CategoryFormData } from '../types/category';
@@ -8,9 +8,13 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import CategoryForm from '../components/CategoryForm';
 import CategoryTree from '../components/CategoryTree';
+import Pagination from '../components/Pagination';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CustomSelect from '../components/CustomSelect';
 
 const Categories: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'tree' | 'table'>('tree');
@@ -29,6 +33,16 @@ const Categories: React.FC = () => {
   } = useQuery({
     queryKey: ['categories', 'hierarchy'],
     queryFn: categoryService.getHierarchy,
+  });
+
+  // Fetch all categories for table view
+  const {
+    data: allCategories,
+    isLoading: isLoadingAll,
+  } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: categoryService.getAllCategories,
+    enabled: viewMode === 'table',
   });
 
   // Fetch category statistics
@@ -114,6 +128,40 @@ const Categories: React.FC = () => {
     setStatusFilter(e.target.value);
   }, []);
 
+  const handleStatusFilterChangeCustom = useCallback((value: string) => {
+    setStatusFilter(value);
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  // Filtered categories for table view
+  const filteredTableCategories = useMemo(() => {
+    if (!allCategories) return [];
+
+    return allCategories.filter((category) => {
+      const matchesSearch = !searchTerm ||
+        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        category.slug.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && category.status === 1) ||
+        (statusFilter === 'inactive' && category.status === 0);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [allCategories, searchTerm, statusFilter]);
+
+  // Paginated categories for table view
+  const paginatedCategories = useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    const endIndex = startIndex + pageSize;
+    return filteredTableCategories.slice(startIndex, endIndex);
+  }, [filteredTableCategories, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredTableCategories.length / pageSize);
+
   // Calculate stats from categories
   const categoryStats = useMemo(() => {
     if (!categories) return { total: 0, active: 0, inactive: 0 };
@@ -141,6 +189,20 @@ const Categories: React.FC = () => {
     
     return countCategories(categories);
   }, [categories]);
+
+  const getStatusColor = useCallback((status: number) => {
+    return status === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+  }, []);
+
+  const getStatusText = useCallback((status: number) => {
+    return status === 1 ? 'Active' : 'Inactive';
+  }, []);
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+  ];
 
   if (error) {
     return (
@@ -231,15 +293,26 @@ const Categories: React.FC = () => {
           
           {/* Status Filter */}
           <div className="w-full sm:w-40 md:w-48">
-            <select
-              value={statusFilter}
-              onChange={handleStatusFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div className="block sm:hidden">
+              <select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div className="hidden sm:block">
+              <CustomSelect
+                options={statusOptions}
+                value={statusFilter}
+                onChange={handleStatusFilterChangeCustom}
+                placeholder="Select status"
+                className="text-sm"
+              />
+            </div>
           </div>
           
           {/* View Mode Toggle */}
@@ -272,20 +345,136 @@ const Categories: React.FC = () => {
 
       {/* Categories Content */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        {isLoading ? (
+        {(isLoading || (viewMode === 'table' && isLoadingAll)) ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner size="md" />
           </div>
         ) : (
-          <div className="p-3 sm:p-4 md:p-6 overflow-x-auto">
-            <CategoryTree
-              categories={categories || []}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              searchTerm={searchTerm}
-              statusFilter={statusFilter}
-            />
-          </div>
+          <>
+            {viewMode === 'tree' ? (
+              <div className="p-3 sm:p-4 md:p-6 overflow-x-auto">
+                <CategoryTree
+                  categories={categories || []}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteClick}
+                  searchTerm={searchTerm}
+                  statusFilter={statusFilter}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Category</th>
+                        <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900 hidden sm:table-cell">Slug</th>
+                        <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900 hidden md:table-cell">Description</th>
+                        <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Status</th>
+                        <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900 hidden lg:table-cell">Sort Order</th>
+                        <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {paginatedCategories.map((category) => (
+                        <tr key={category.id} className="hover:bg-gray-50">
+                          <td className="py-4 px-4 sm:px-6">
+                            <div className="flex items-center space-x-3">
+                              {category.imageUrl && (
+                                <img
+                                  src={category.imageUrl}
+                                  alt={category.name}
+                                  className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {category.name}
+                                </p>
+                                <p className="text-xs text-gray-500 sm:hidden font-mono">
+                                  {category.slug}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 sm:px-6 hidden sm:table-cell">
+                            <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                              {category.slug}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 sm:px-6 hidden md:table-cell">
+                            <div className="max-w-xs truncate text-sm text-gray-600" title={category.description}>
+                              {category.description || '-'}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 sm:px-6">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(category.status)}`}
+                            >
+                              {getStatusText(category.status)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 sm:px-6 hidden lg:table-cell text-sm text-gray-900">
+                            {category.sortOrder}
+                          </td>
+                          <td className="py-4 px-4 sm:px-6">
+                            <div className="flex space-x-1">
+                              <button
+                                onClick={() => handleEditClick(category)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Edit category"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(category)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="Delete category"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination for table view */}
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalElements={filteredTableCategories.length}
+                    pageSize={pageSize}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+
+                {/* Empty State for table view */}
+                {paginatedCategories.length === 0 && !isLoadingAll && (
+                  <div className="text-center py-12">
+                    <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">
+                      {searchTerm || statusFilter !== 'all' ? 'No categories match your filters' : 'No categories found'}
+                    </p>
+                    {!searchTerm && statusFilter === 'all' && (
+                      <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        Create your first category
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </>
         )}
       </div>
 

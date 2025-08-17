@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { CouponFormData, Coupon } from '../types/coupon';
+import CustomSelect from './CustomSelect';
+import CustomDatePicker from './CustomDatePicker';
 
 const couponSchema = yup.object({
   code: yup
@@ -126,13 +128,26 @@ const CouponForm: React.FC<CouponFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Discount Type *
           </label>
-          <select
-            {...register('type')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          >
-            <option value="0">Percentage (%)</option>
-            <option value="1">Fixed Amount ($)</option>
-          </select>
+          <div className="block sm:hidden">
+            <select
+              {...register('type')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            >
+              <option value="0">Percentage (%)</option>
+              <option value="1">Fixed Amount ($)</option>
+            </select>
+          </div>
+          <div className="hidden sm:block">
+            <CustomSelect
+              options={[
+                { value: '0', label: 'Percentage (%)' },
+                { value: '1', label: 'Fixed Amount ($)' }
+              ]}
+              value={watch('type')}
+              onChange={(value) => setValue('type', value as '0' | '1')}
+              placeholder="Select discount type"
+            />
+          </div>
           {errors.type && (
             <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
           )}
@@ -205,13 +220,24 @@ const CouponForm: React.FC<CouponFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Start Date *
           </label>
-          <input
-            {...register('startsAt')}
-            type="datetime-local"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          />
+          <div className="block sm:hidden">
+            <input
+              {...register('startsAt')}
+              type="datetime-local"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            />
+          </div>
+          <div className="hidden sm:block">
+            <CustomDatePicker
+              value={watch('startsAt')}
+              onChange={(value) => setValue('startsAt', value)}
+              placeholder="Select start date and time"
+              includeTime={true}
+              error={errors.startsAt?.message}
+            />
+          </div>
           {errors.startsAt && (
-            <p className="mt-1 text-sm text-red-600">{errors.startsAt.message}</p>
+            <p className="mt-1 text-sm text-red-600 sm:hidden">{errors.startsAt.message}</p>
           )}
         </div>
 
@@ -220,13 +246,25 @@ const CouponForm: React.FC<CouponFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             End Date *
           </label>
-          <input
-            {...register('endsAt')}
-            type="datetime-local"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          />
+          <div className="block sm:hidden">
+            <input
+              {...register('endsAt')}
+              type="datetime-local"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            />
+          </div>
+          <div className="hidden sm:block">
+            <CustomDatePicker
+              value={watch('endsAt')}
+              onChange={(value) => setValue('endsAt', value)}
+              placeholder="Select end date and time"
+              includeTime={true}
+              min={watch('startsAt')}
+              error={errors.endsAt?.message}
+            />
+          </div>
           {errors.endsAt && (
-            <p className="mt-1 text-sm text-red-600">{errors.endsAt.message}</p>
+            <p className="mt-1 text-sm text-red-600 sm:hidden">{errors.endsAt.message}</p>
           )}
         </div>
       </div>

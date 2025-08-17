@@ -2,6 +2,9 @@ import { apiCall } from '../utils/api';
 import { Category, CategoryFormData, CategoryStats } from '../types/category';
 
 export const categoryService = {
+  // Get all categories (flat list)
+  getAllCategories: () => apiCall<Category[]>('GET', '/categories/all'),
+
   // Get category hierarchy
   getHierarchy: () => apiCall<Category[]>('GET', '/categories/hierarchy'),
 

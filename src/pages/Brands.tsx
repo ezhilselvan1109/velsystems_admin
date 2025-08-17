@@ -8,6 +8,7 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import BrandForm from '../components/BrandForm';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CustomSelect from '../components/CustomSelect';
 
 const Brands: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,6 +107,10 @@ const Brands: React.FC = () => {
     setStatusFilter(e.target.value);
   }, []);
 
+  const handleStatusFilterChangeCustom = useCallback((value: string) => {
+    setStatusFilter(value);
+  }, []);
+
   // Filtered brands
   const filteredBrands = useMemo(() => {
     if (!brands) return [];
@@ -141,6 +146,12 @@ const Brands: React.FC = () => {
   const getStatusText = useCallback((status: number) => {
     return status === 1 ? 'Active' : 'Inactive';
   }, []);
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+  ];
 
   if (error) {
     return (
@@ -231,15 +242,25 @@ const Brands: React.FC = () => {
 
           {/* Status Filter */}
           <div className="sm:w-48">
-            <select
-              value={statusFilter}
-              onChange={handleStatusFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div className="block sm:hidden">
+              <select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div className="hidden sm:block">
+              <CustomSelect
+                options={statusOptions}
+                value={statusFilter}
+                onChange={handleStatusFilterChangeCustom}
+                placeholder="Select status"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import Pagination from '../components/Pagination';
 import CouponForm from '../components/CouponForm';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CustomSelect from '../components/CustomSelect';
 
 const Coupons: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -119,6 +120,10 @@ const Coupons: React.FC = () => {
     setStatusFilter(e.target.value);
   }, []);
 
+  const handleStatusFilterChangeCustom = useCallback((value: string) => {
+    setStatusFilter(value);
+  }, []);
+
   // Filtered coupons (client-side filtering for search)
   const filteredCoupons = useMemo(() => {
     const coupons = couponsData?.content || [];
@@ -181,6 +186,13 @@ const Coupons: React.FC = () => {
   const formatDiscount = useCallback((coupon: Coupon) => {
     return coupon.type === 0 ? `${coupon.value}%` : `$${coupon.value}`;
   }, []);
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'expired', label: 'Expired' },
+  ];
 
   if (error) {
     return (
@@ -271,16 +283,26 @@ const Coupons: React.FC = () => {
 
           {/* Status Filter */}
           <div className="sm:w-48">
-            <select
-              value={statusFilter}
-              onChange={handleStatusFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="expired">Expired</option>
-            </select>
+            <div className="block sm:hidden">
+              <select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+            <div className="hidden sm:block">
+              <CustomSelect
+                options={statusOptions}
+                value={statusFilter}
+                onChange={handleStatusFilterChangeCustom}
+                placeholder="Select status"
+              />
+            </div>
           </div>
         </div>
       </div>

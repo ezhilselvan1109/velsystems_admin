@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   X,
+  Tag,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     { path: '/products', label: 'Products' },
     { path: '/categories', label: 'Categories' },
     { path: '/brands', label: 'Brands' },
+    { path: '/product-types', label: 'Product Types' },
   ];
   const marketingSubItems = [
     { path: '/marketing/coupons', label: 'Coupons' },
