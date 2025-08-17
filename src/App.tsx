@@ -11,10 +11,11 @@ import Login from './pages/Login';
 
 // Lazy load pages for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Products = lazy(() => import('./pages/Products'));
 const Categories = lazy(() => import('./pages/Categories'));
 const Brands = lazy(() => import('./pages/Brands'));
 const ProductTypes = lazy(() => import('./pages/ProductTypes'));
+const Products = lazy(() => import('./pages/Products'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const Orders = lazy(() => import('./pages/Orders'));
 const Coupons = lazy(() => import('./pages/Coupons'));
@@ -47,10 +48,11 @@ function App() {
                   }
                 >
                   <Route index element={<Dashboard />} />
-                  <Route path="products" element={<Products />} />
                   <Route path="categories" element={<Categories />} />
                   <Route path="brands" element={<Brands />} />
                   <Route path="product-types" element={<ProductTypes />} />
+                  <Route path="products" element={<Products />} />
+                  <Route path="products/:id" element={<ProductDetail />} />
                   <Route path="inventory" element={<Inventory />} />
                   <Route path="orders" element={<Orders />} />
                   <Route path="marketing/coupons" element={<Coupons />} />

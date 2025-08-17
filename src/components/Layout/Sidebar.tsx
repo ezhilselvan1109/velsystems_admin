@@ -30,12 +30,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/products', icon: Package, label: 'Products' },
     { path: '/inventory', icon: Archive, label: 'Inventory' },
     { path: '/orders', icon: ShoppingCart, label: 'Orders' },
   ];
 
   const productSubItems = [
-    { path: '/products', label: 'Products' },
     { path: '/categories', label: 'Categories' },
     { path: '/brands', label: 'Brands' },
     { path: '/product-types', label: 'Product Types' },
@@ -108,8 +108,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
               className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
             >
               <div className="flex items-center">
-                <Package className="w-5 h-5 mr-3" />
-                Products
+                <Tag className="w-5 h-5 mr-3" />
+                Product Setup
               </div>
               {isProductsOpen ? (
                 <ChevronDown className="w-4 h-4" />
