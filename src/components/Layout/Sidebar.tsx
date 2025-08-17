@@ -3,14 +3,11 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
-  FolderOpen,
-  Building2,
   Archive,
   ShoppingCart,
   Megaphone,
   ChevronDown,
   ChevronRight,
-  Menu,
   X,
 } from 'lucide-react';
 
@@ -65,12 +62,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-              <Package className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+        <div className="flex items-center justify-between p-3 border-b border-gray-200">
+          <div className="space-x-2">
+            <img
+              src="/vels-logo.png"
+              alt="logo"
+              className="w-32 h-auto sm:w-40 md:w-48 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
           <button
             onClick={onToggle}
@@ -87,10 +88,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                  : 'text-gray-700 hover:bg-gray-100'
                 }`
               }
             >
@@ -122,11 +122,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                   <NavLink
                     key={item.path}
                     to={item.path}
+                    // className={({ isActive }) =>
+                    //   `block px-3 py-2 rounded-lg text-sm transition-colors ${isActive
+                    //     ? 'bg-blue-50 text-blue-700'
+                    //     : 'text-gray-600 hover:bg-gray-100'
+                    //   }`
+                    // }
                     className={({ isActive }) =>
-                      `block px-3 py-2 rounded-lg text-sm transition-colors ${
-                        isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100'
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-700 hover:bg-gray-100'
                       }`
                     }
                   >
@@ -160,10 +165,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                     key={item.path}
                     to={item.path}
                     className={({ isActive }) =>
-                      `block px-3 py-2 rounded-lg text-sm transition-colors ${
-                        isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100'
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-700 hover:bg-gray-100'
                       }`
                     }
                   >

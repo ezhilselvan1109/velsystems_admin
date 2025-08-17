@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Calendar, Percent, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Calendar, Percent, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { couponService } from '../services/coupon';
 import { Coupon, CouponFormData } from '../types/coupon';
@@ -12,6 +12,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const Coupons: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -114,23 +115,39 @@ const Coupons: React.FC = () => {
     setSearchTerm(e.target.value);
   }, []);
 
+  const handleStatusFilterChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(e.target.value);
+  }, []);
+
   // Filtered coupons (client-side filtering for search)
   const filteredCoupons = useMemo(() => {
-    if (!couponsData?.content || !searchTerm) {
-      return couponsData?.content || [];
-    }
-    return couponsData.content.filter(
-      (coupon) =>
+    const coupons = couponsData?.content || [];
+    if (!coupons.length) return [];
+
+    return coupons.filter((coupon) => {
+      const matchesSearch =
+        !searchTerm ||
         coupon.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coupon.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [couponsData?.content, searchTerm]);
+        coupon.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const now = new Date();
+      const endDate = new Date(coupon.endsAt);
+
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && coupon.active && endDate >= now) ||
+        (statusFilter === 'inactive' && !coupon.active) ||
+        (statusFilter === 'expired' && endDate < now);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [couponsData?.content, searchTerm, statusFilter]);
 
   // Utility functions
   const getStatusColor = useCallback((coupon: Coupon) => {
     const now = new Date();
     const endDate = new Date(coupon.endsAt);
-    
+
     if (!coupon.active) {
       return 'bg-gray-100 text-gray-800';
     }
@@ -143,7 +160,7 @@ const Coupons: React.FC = () => {
   const getStatusText = useCallback((coupon: Coupon) => {
     const now = new Date();
     const endDate = new Date(coupon.endsAt);
-    
+
     if (!coupon.active) {
       return 'Inactive';
     }
@@ -235,17 +252,36 @@ const Coupons: React.FC = () => {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search coupons..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      {/* Filters and Search */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search brands by name or description..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div className="sm:w-48">
+            <select
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
         </div>
       </div>
 

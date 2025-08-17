@@ -109,13 +109,13 @@ const Brands: React.FC = () => {
   // Filtered brands
   const filteredBrands = useMemo(() => {
     if (!brands) return [];
-    
+
     return brands.filter((brand) => {
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         brand.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus = statusFilter === 'all' || 
+      const matchesStatus = statusFilter === 'all' ||
         (statusFilter === 'active' && brand.status === 1) ||
         (statusFilter === 'inactive' && brand.status === 0);
 
@@ -126,7 +126,7 @@ const Brands: React.FC = () => {
   // Calculate stats
   const brandStats = useMemo(() => {
     if (!brands) return { total: 0, active: 0, inactive: 0 };
-    
+
     return {
       total: brands.length,
       active: brands.filter(brand => brand.status === 1).length,
@@ -177,7 +177,7 @@ const Brands: React.FC = () => {
 
       {/* Brand Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Brands</p>
@@ -188,7 +188,7 @@ const Brands: React.FC = () => {
             <Building2 className="w-8 h-8 text-blue-600" />
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active</p>
@@ -199,7 +199,7 @@ const Brands: React.FC = () => {
             <Building2 className="w-8 h-8 text-green-600" />
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Inactive</p>
@@ -213,7 +213,7 @@ const Brands: React.FC = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
@@ -228,7 +228,7 @@ const Brands: React.FC = () => {
               />
             </div>
           </div>
-          
+
           {/* Status Filter */}
           <div className="sm:w-48">
             <select
@@ -245,46 +245,37 @@ const Brands: React.FC = () => {
       </div>
 
       {/* Brands Content */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner size="md" />
           </div>
         ) : (
           <>
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left py-4 px-6 font-medium text-gray-900">Brand</th>
-                    <th className="text-left py-4 px-6 font-medium text-gray-900">Description</th>
-                    <th className="text-left py-4 px-6 font-medium text-gray-900">Logo</th>
-                    <th className="text-left py-4 px-6 font-medium text-gray-900">Status</th>
-                    <th className="text-left py-4 px-6 font-medium text-gray-900">Sort Order</th>
-                    <th className="text-left py-4 px-6 font-medium text-gray-900">Actions</th>
+                    <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Brand</th>
+                    <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Description</th>
+                    <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Logo</th>
+                    <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Status</th>
+                    <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">SortOrder</th>
+                    <th className="text-left py-3 px-4 sm:px-6 font-medium text-gray-900">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredBrands.map((brand) => (
-                    <tr key={brand.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center">
-                          <Building2 className="w-5 h-5 text-gray-400 mr-3" />
-                          <div>
-                            <p className="font-medium text-gray-900">{brand.name}</p>
-                            <p className="text-sm text-gray-500">ID: {brand.id.slice(0, 8)}...</p>
-                          </div>
+                    <tr key={brand.id} className="hover:bg-gray-50">
+                      <td className="py-4 px-4 sm:px-6">
+                        {brand.name}
+                      </td>
+                      <td className="py-4 px-4 sm:px-6 text-gray-900">
+                        <div className="max-w-xs truncate" title={brand.description}>
+                          {brand.description}
                         </div>
                       </td>
-                      <td className="py-4 px-6">
-                        <div className="max-w-xs">
-                          <p className="text-gray-900 truncate" title={brand.description}>
-                            {brand.description || 'No description'}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-4 sm:px-6">
                         {brand.logoUrl ? (
                           <img
                             src={brand.logoUrl}
@@ -300,27 +291,29 @@ const Brands: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-4 sm:px-6">
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(brand.status)}`}
                         >
                           {getStatusText(brand.status)}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-gray-900">{brand.sortOrder}</td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center space-x-1">
+                      <td className="py-4 px-4 sm:px-6">
+                        {brand.sortOrder}
+                      </td>
+                      <td className="py-4 px-4 sm:px-6">
+                        <div className="flex space-x-1">
                           <button
                             onClick={() => handleEditClick(brand)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit brand"
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="Edit coupon"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteClick(brand)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete brand"
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete coupon"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -330,93 +323,24 @@ const Brands: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="md:hidden p-4 space-y-4">
-              {filteredBrands.map((brand) => (
-                <div key={brand.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3 flex-1">
-                      {/* Logo */}
-                      <div className="flex-shrink-0">
-                        {brand.logoUrl ? (
-                          <img
-                            src={brand.logoUrl}
-                            alt={brand.name}
-                            className="w-12 h-12 object-contain rounded-lg border border-gray-200 bg-white p-1"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                            <Building2 className="w-6 h-6 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Brand Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="text-sm font-medium text-gray-900 truncate">
-                            {brand.name}
-                          </h3>
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(brand.status)}`}
-                          >
-                            {getStatusText(brand.status)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                          {brand.description || 'No description'}
-                        </p>
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
-                          <span>Sort: {brand.sortOrder}</span>
-                          <span className="font-mono">ID: {brand.id.slice(0, 8)}...</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center space-x-1 ml-4">
-                      <button
-                        onClick={() => handleEditClick(brand)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit brand"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(brand)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete brand"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+              {/* Empty State */}
+              {filteredBrands.length === 0 && !isLoading && (
+                <div className="text-center py-12">
+                  <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">
+                    {searchTerm || statusFilter !== 'all' ? 'No brands match your filters' : 'No brands found'}
+                  </p>
+                  {!searchTerm && statusFilter === 'all' && (
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Create your first brand
+                    </button>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
-
-            {/* Empty State */}
-            {filteredBrands.length === 0 && !isLoading && (
-              <div className="text-center py-12">
-                <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">
-                  {searchTerm || statusFilter !== 'all' ? 'No brands match your filters' : 'No brands found'}
-                </p>
-                {!searchTerm && statusFilter === 'all' && (
-                  <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Create your first brand
-                  </button>
-                )}
-              </div>
-            )}
           </>
         )}
       </div>
