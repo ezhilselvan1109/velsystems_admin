@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, FolderOpen, Grid, List, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, FolderOpen, Grid, List, Edit, Trash2, CheckCircle, XCircle, Tags, BadgeCheck, Ban } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { categoryService } from '../services/category';
 import { Category, CategoryFormData } from '../types/category';
@@ -247,7 +247,7 @@ const Categories: React.FC = () => {
                 {categoryStats.total}
               </p>
             </div>
-            <FolderOpen className="w-8 h-8 text-blue-600" />
+            <Tags className="w-8 h-8 text-blue-600" />
           </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -258,7 +258,7 @@ const Categories: React.FC = () => {
                 {categoryStats.active}
               </p>
             </div>
-            <FolderOpen className="w-8 h-8 text-green-600" />
+            <BadgeCheck className="w-8 h-8 text-green-600" />
           </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -269,7 +269,7 @@ const Categories: React.FC = () => {
                 {categoryStats.inactive}
               </p>
             </div>
-            <FolderOpen className="w-8 h-8 text-gray-600" />
+            <Ban className="w-8 h-8 text-gray-600" />
           </div>
         </div>
       </div>

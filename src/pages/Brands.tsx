@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit, Trash2, Building2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Building2, ShoppingBag, Star, ShieldOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { brandService } from '../services/brand';
 import { Brand, BrandFormData } from '../types/brand';
@@ -196,7 +196,7 @@ const Brands: React.FC = () => {
                 {brandStats.total}
               </p>
             </div>
-            <Building2 className="w-8 h-8 text-blue-600" />
+            <ShoppingBag className="w-8 h-8 text-blue-600" />
           </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -207,7 +207,7 @@ const Brands: React.FC = () => {
                 {brandStats.active}
               </p>
             </div>
-            <Building2 className="w-8 h-8 text-green-600" />
+            <Star className="w-8 h-8 text-green-600" />
           </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -218,24 +218,24 @@ const Brands: React.FC = () => {
                 {brandStats.inactive}
               </p>
             </div>
-            <Building2 className="w-8 h-8 text-gray-600" />
+            <ShieldOff className="w-8 h-8 text-gray-600" />
           </div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search brands by name or description..."
+                placeholder="Search categories by name or slug..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
               />
             </div>
           </div>

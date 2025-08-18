@@ -134,14 +134,14 @@ const CouponForm: React.FC<CouponFormProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             >
               <option value="0">Percentage (%)</option>
-              <option value="1">Fixed Amount ($)</option>
+              <option value="1">Fixed Amount (₹)</option>
             </select>
           </div>
           <div className="hidden sm:block">
             <CustomSelect
               options={[
                 { value: '0', label: 'Percentage (%)' },
-                { value: '1', label: 'Fixed Amount ($)' }
+                { value: '1', label: 'Fixed Amount (₹)' }
               ]}
               value={watch('type')}
               onChange={(value) => setValue('type', value as '0' | '1')}
@@ -187,7 +187,7 @@ const CouponForm: React.FC<CouponFormProps> = ({
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <span className="text-gray-500 text-sm">
-                {watchType === '0' ? '%' : '$'}
+                {watchType === '0' ? '%' : '₹'}
               </span>
             </div>
           </div>
