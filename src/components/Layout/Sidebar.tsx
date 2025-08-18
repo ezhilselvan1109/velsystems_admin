@@ -37,8 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
   const productSubItems = [
     { path: '/categories', label: 'Categories' },
-    { path: '/brands', label: 'Brands' },
-    { path: '/product-types', label: 'Product Types' },
+    { path: '/brands', label: 'Brands' }
   ];
   const marketingSubItems = [
     { path: '/marketing/coupons', label: 'Coupons' },
