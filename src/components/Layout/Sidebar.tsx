@@ -11,6 +11,10 @@ import {
   X,
   Tag,
   Menu,
+  Settings,
+  Users,
+  BarChart3,
+  FileText,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,6 +26,8 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false }) => {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
+  const [isReportsOpen, setIsReportsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const location = useLocation();
 
   const toggleProducts = useCallback(() => {
@@ -32,6 +38,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
     setIsMarketingOpen(prev => !prev);
   }, []);
 
+  const toggleReports = useCallback(() => {
+    setIsReportsOpen(prev => !prev);
+  }, []);
+
+  const toggleSettings = useCallback(() => {
+    setIsSettingsOpen(prev => !prev);
+  }, []);
   const handleNavClick = useCallback(() => {
     // Close sidebar on mobile when nav item is clicked
     if (window.innerWidth < 1024) {
@@ -53,6 +66,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
   const marketingSubItems = [
     { path: '/marketing/coupons', label: 'Coupons' },
   ];
+  const reportSubItems = [
+    { path: '/reports/sales', label: 'Sales Report' },
+    { path: '/reports/inventory', label: 'Inventory Report' },
+  ];
+  const settingsSubItems = [
+    { path: '/settings/general', label: 'General' },
+    { path: '/settings/users', label: 'Users' },
+  ];
 
   // Check if current path matches any product setup routes
   const isProductSetupActive = ['/categories', '/brands'].some(path => 
@@ -64,6 +85,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
     location.pathname.startsWith(path)
   );
 
+  // Check if current path matches any reports routes
+  const isReportsActive = ['/reports'].some(path => 
+    location.pathname.startsWith(path)
+  );
+
+  // Check if current path matches any settings routes
+  const isSettingsActive = ['/settings'].some(path => 
+    location.pathname.startsWith(path)
+  );
   // Auto-expand sections based on current route
   React.useEffect(() => {
     if (isProductSetupActive) {
@@ -72,7 +102,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
     if (isMarketingActive) {
       setIsMarketingOpen(true);
     }
-  }, [isProductSetupActive, isMarketingActive]);
+    if (isReportsActive) {
+      setIsReportsOpen(true);
+    }
+    if (isSettingsActive) {
+      setIsSettingsOpen(true);
+    }
+  }, [isProductSetupActive, isMarketingActive, isReportsActive, isSettingsActive]);
 
   return (
     <>
@@ -91,6 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:static lg:z-auto
           ${isCondensed ? 'w-16' : 'w-64'}
+          shadow-lg lg:shadow-none
         `}
       >
         {/* Header */}
@@ -121,14 +158,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
         </div>
 
         {/* Navigation */}
-        <nav className={`p-4 space-y-2 ${isCondensed ? 'px-2' : ''}`}>
+        <nav className={`p-4 space-y-2 ${isCondensed ? 'px-2' : ''} overflow-y-auto flex-1`}>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               onClick={handleNavClick}
               className={({ isActive }) =>
-                `group flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 ${isActive
+                `group flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:scale-105 ${isActive
                   ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                   : 'text-gray-700 hover:bg-gray-100'
                 } ${isCondensed ? 'justify-center px-2' : ''}`
@@ -138,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
               <item.icon className={`w-5 h-5 ${isCondensed ? '' : 'mr-3'}`} />
               {!isCondensed && item.label}
               {isCondensed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
                   {item.label}
                 </div>
               )}
@@ -168,7 +205,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
                 </>
               )}
               {isCondensed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
                   Product Setup
                 </div>
               )}
@@ -182,7 +219,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
                     to={item.path}
                     onClick={handleNavClick}
                     className={({ isActive }) =>
-                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 ${isActive
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:translate-x-1 ${isActive
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                       }`
@@ -217,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
                 </>
               )}
               {isCondensed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
                   Marketing
                 </div>
               )}
@@ -231,7 +268,107 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
                     to={item.path}
                     onClick={handleNavClick}
                     className={({ isActive }) =>
-                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 ${isActive
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:translate-x-1 ${isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-700 hover:bg-gray-100'
+                      }`
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Reports with submenu */}
+          <div>
+            <button
+              onClick={toggleReports}
+              className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors ${
+                isReportsActive ? 'bg-blue-50 text-blue-700' : ''
+              } ${isCondensed ? 'justify-center px-2' : ''}`}
+              title={isCondensed ? 'Reports' : ''}
+            >
+              <div className={`flex items-center ${isCondensed ? 'justify-center' : ''}`}>
+                <BarChart3 className={`w-5 h-5 ${isCondensed ? '' : 'mr-3'}`} />
+                {!isCondensed && 'Reports'}
+              </div>
+              {!isCondensed && (
+                <>
+                  {isReportsOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </>
+              )}
+              {isCondensed && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
+                  Reports
+                </div>
+              )}
+            </button>
+
+            {isReportsOpen && !isCondensed && (
+              <div className="ml-8 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                {reportSubItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:translate-x-1 ${isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-700 hover:bg-gray-100'
+                      }`
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Settings with submenu */}
+          <div>
+            <button
+              onClick={toggleSettings}
+              className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors ${
+                isSettingsActive ? 'bg-blue-50 text-blue-700' : ''
+              } ${isCondensed ? 'justify-center px-2' : ''}`}
+              title={isCondensed ? 'Settings' : ''}
+            >
+              <div className={`flex items-center ${isCondensed ? 'justify-center' : ''}`}>
+                <Settings className={`w-5 h-5 ${isCondensed ? '' : 'mr-3'}`} />
+                {!isCondensed && 'Settings'}
+              </div>
+              {!isCondensed && (
+                <>
+                  {isSettingsOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </>
+              )}
+              {isCondensed && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
+                  Settings
+                </div>
+              )}
+            </button>
+
+            {isSettingsOpen && !isCondensed && (
+              <div className="ml-8 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                {settingsSubItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:translate-x-1 ${isActive
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                       }`

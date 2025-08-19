@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Package, ChevronLeft, ChevronRight, ZoomIn, X, Plus, Trash2, Settings } from 'lucide-react';
+import { ArrowLeft, Edit, Package, ChevronLeft, ChevronRight, ZoomIn, X, Plus, Trash2, Settings, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { productService } from '../services/product';
 import { ProductVariant, ProductVariantFormData } from '../types/product';
@@ -19,6 +19,7 @@ const ProductDetail: React.FC = () => {
   const [isEditVariantModalOpen, setIsEditVariantModalOpen] = useState(false);
   const [isDeleteVariantDialogOpen, setIsDeleteVariantDialogOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [copiedSku, setCopiedSku] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -101,6 +102,12 @@ const ProductDetail: React.FC = () => {
     setIsDeleteVariantDialogOpen(true);
   };
 
+  const handleCopySku = (sku: string) => {
+    navigator.clipboard.writeText(sku);
+    setCopiedSku(sku);
+    toast.success('SKU copied to clipboard!');
+    setTimeout(() => setCopiedSku(null), 2000);
+  };
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -210,13 +217,22 @@ const ProductDetail: React.FC = () => {
             <p className="text-sm text-gray-600 font-mono">{product.slug}</p>
           </div>
         </div>
-        <button
-          onClick={() => navigate(`/products/${product.id}/edit`)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center text-sm sm:text-base"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Edit Product
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button
+            onClick={() => window.open(`/products/${product.id}`, '_blank')}
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center text-sm sm:text-base"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Preview
+          </button>
+          <button
+            onClick={() => navigate(`/products/${product.id}/edit`)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center text-sm sm:text-base"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Edit Product
+          </button>
+        </div>
       </div>
 
       {/* Product Overview */}
@@ -385,25 +401,34 @@ const ProductDetail: React.FC = () => {
         </div>
 
         {product.variants.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {product.variants.map((variant, index) => (
-              <div key={variant.id || index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div key={variant.id || index} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-all duration-200 hover:scale-105">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <span className="font-medium text-gray-900 text-sm block truncate">{variant.sku}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900 text-sm block truncate">{variant.sku}</span>
+                      <button
+                        onClick={() => handleCopySku(variant.sku)}
+                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Copy SKU"
+                      >
+                        <Copy className={`w-3 h-3 ${copiedSku === variant.sku ? 'text-green-600' : ''}`} />
+                      </button>
+                    </div>
                     <span className="font-bold text-blue-600 text-lg">{formatPrice(variant.price)}</span>
                   </div>
                   <div className="flex space-x-1 ml-2">
                     <button
                       onClick={() => handleEditVariant(variant)}
-                      className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Edit variant"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteVariantClick(variant)}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete variant"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -415,9 +440,9 @@ const ProductDetail: React.FC = () => {
                 {variant.options.length > 0 && (
                   <div className="space-y-2 mb-3">
                     {variant.options.map((option, optIndex) => (
-                      <div key={optIndex} className="flex justify-between text-sm">
+                      <div key={optIndex} className="flex justify-between text-sm bg-gray-50 px-2 py-1 rounded">
                         <span className="text-gray-600">{option.optionName}:</span>
-                        <span className="text-gray-900">{option.optionValue}</span>
+                        <span className="text-gray-900 font-medium">{option.optionValue}</span>
                       </div>
                     ))}
                   </div>
@@ -427,18 +452,26 @@ const ProductDetail: React.FC = () => {
                 {variant.images && variant.images.length > 0 && (
                   <div className="flex space-x-2 overflow-x-auto pb-2">
                     {variant.images.slice(0, 3).map((image, imgIndex) => (
-                      <img
-                        key={imgIndex}
-                        src={image.imageUrl}
-                        alt={`${variant.sku} ${imgIndex + 1}`}
-                        className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded border border-gray-200 flex-shrink-0"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+                      <div key={imgIndex} className="relative flex-shrink-0">
+                        <img
+                          src={image.imageUrl}
+                          alt={`${variant.sku} ${imgIndex + 1}`}
+                          className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg border border-gray-200 hover:scale-110 transition-transform cursor-pointer"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                          onClick={() => {
+                            setCurrentImageIndex(allImages.findIndex(img => img.imageUrl === image.imageUrl));
+                            setIsZoomOpen(true);
+                          }}
+                        />
+                        {image.isPrimary && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border border-white"></div>
+                        )}
+                      </div>
                     ))}
                     {variant.images.length > 3 && (
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-xs text-gray-500 flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-xs text-gray-500 flex-shrink-0">
                         +{variant.images.length - 3}
                       </div>
                     )}
@@ -447,7 +480,7 @@ const ProductDetail: React.FC = () => {
 
                 {/* No Images State */}
                 {(!variant.images || variant.images.length === 0) && (
-                  <div className="flex items-center justify-center h-12 bg-gray-50 rounded border-2 border-dashed border-gray-200">
+                  <div className="flex items-center justify-center h-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
                     <Package className="w-5 h-5 text-gray-400 mr-2" />
                     <span className="text-xs text-gray-500">No images</span>
                   </div>
@@ -481,7 +514,7 @@ const ProductDetail: React.FC = () => {
                   {option.values.map((value, valueIndex) => (
                     <span
                       key={value.id || valueIndex}
-                      className="inline-flex px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-full"
+                      className="inline-flex px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors"
                     >
                       {value.value}
                     </span>
@@ -505,7 +538,7 @@ const ProductDetail: React.FC = () => {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {group.specifications.map((spec, specIndex) => (
-                    <div key={spec.id || specIndex} className="flex justify-between items-center py-2">
+                    <div key={spec.id || specIndex} className="flex justify-between items-center py-2 hover:bg-gray-50 px-2 rounded transition-colors">
                       <span className="text-gray-600">{spec.attributeName}</span>
                       <span className="font-medium text-gray-900">{spec.attributeValue}</span>
                     </div>
