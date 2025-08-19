@@ -16,7 +16,7 @@ export const productService = {
       brandId: params.brandId,
       categoryId: params.categoryId,
       keyword: params.keyword,
-      status: params.status || '1', // Default to active
+      status: params.status,
       page: params.page || 0,
       size: params.size || 10,
       sortBy: params.sortBy || 'createdAt',

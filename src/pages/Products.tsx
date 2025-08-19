@@ -247,6 +247,8 @@ const Products: React.FC = () => {
     );
   }
 
+  console.log('Products data:', productsData);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -546,9 +548,11 @@ const Products: React.FC = () => {
                               </p>
                               <div className="md:hidden lg:hidden mt-1">
                                 <span className="text-xs text-gray-500">
-                                  {/* {product.brand.name} */}
+                                  {product.brand?.name}
                                 </span>
-                                {/* <span className="sm:hidden"> • {product.category.name}</span> */}
+                                <span className="sm:hidden"> • 
+                                  {product.category?.name}
+                                  </span>
                               </div>
                               <div className="sm:hidden mt-1">
                                 <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(product.status)}`}>
@@ -559,10 +563,10 @@ const Products: React.FC = () => {
                           </div>
                         </td>
                         <td className="py-3 sm:py-4 px-3 sm:px-6 text-sm text-gray-900 hidden md:table-cell">
-                          {/* {product.brand.name} */}
+                          {product.brand?.name}
                         </td>
                         <td className="py-3 sm:py-4 px-3 sm:px-6 text-sm text-gray-900 hidden lg:table-cell">
-                          {/* {product.category.name} */}
+                          {product.category?.name}
                         </td>
                         <td className="py-3 sm:py-4 px-3 sm:px-6">
                           <span className="font-medium text-gray-900 text-sm">
@@ -612,7 +616,7 @@ const Products: React.FC = () => {
             </div>
 
             {/* Pagination */}
-            {productsData && productsData.totalPages > 1 && (
+            {productsData && (
               <Pagination
                 currentPage={productsData.number}
                 totalPages={productsData.totalPages}

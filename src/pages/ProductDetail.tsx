@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Package, ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, Edit, Package, ChevronLeft, ChevronRight, ZoomIn, X, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { productService } from '../services/product';
+import { ProductVariant, ProductVariantFormData } from '../types/product';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import ProductVariantForm from '../components/ProductVariantForm';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [isEditVariantModalOpen, setIsEditVariantModalOpen] = useState(false);
+  const [isDeleteVariantDialogOpen, setIsDeleteVariantDialogOpen] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+
+  const queryClient = useQueryClient();
 
   const {
     data: product,
@@ -20,6 +31,75 @@ const ProductDetail: React.FC = () => {
     queryFn: () => productService.getProduct(id!),
     enabled: !!id,
   });
+
+  // Create variant mutation
+  const createVariantMutation = useMutation({
+    mutationFn: (data: ProductVariantFormData) =>
+      productService.createProductVariant(id!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products', id] });
+      setIsVariantModalOpen(false);
+      toast.success('Variant created successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create variant');
+    },
+  });
+
+  // Update variant mutation
+  const updateVariantMutation = useMutation({
+    mutationFn: (data: ProductVariantFormData) =>
+      productService.updateProductVariant(selectedVariant!.id!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products', id] });
+      setIsEditVariantModalOpen(false);
+      setSelectedVariant(null);
+      toast.success('Variant updated successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update variant');
+    },
+  });
+
+  // Delete variant mutation
+  const deleteVariantMutation = useMutation({
+    mutationFn: (variantId: string) =>
+      productService.deleteProductVariant(variantId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products', id] });
+      setIsDeleteVariantDialogOpen(false);
+      setSelectedVariant(null);
+      toast.success('Variant deleted successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete variant');
+    },
+  });
+
+  // Handlers
+  const handleCreateVariant = (data: ProductVariantFormData) => {
+    createVariantMutation.mutate(data);
+  };
+
+  const handleUpdateVariant = (data: ProductVariantFormData) => {
+    updateVariantMutation.mutate(data);
+  };
+
+  const handleDeleteVariant = () => {
+    if (selectedVariant?.id) {
+      deleteVariantMutation.mutate(selectedVariant.id);
+    }
+  };
+
+  const handleEditVariant = (variant: ProductVariant) => {
+    setSelectedVariant(variant);
+    setIsEditVariantModalOpen(true);
+  };
+
+  const handleDeleteVariantClick = (variant: ProductVariant) => {
+    setSelectedVariant(variant);
+    setIsDeleteVariantDialogOpen(true);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -230,13 +310,13 @@ const ProductDetail: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Brand</span>
                 <span className="font-medium text-gray-900">
-                  {/* {product.brand.name} */}
+                  {product.brand?.name}
                   </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Category</span>
                 <span className="font-medium text-gray-900">
-                  {/* {product.category.name} */}
+                  {product.category?.name}
                   </span>
               </div>
               <div className="flex items-center justify-between">
