@@ -1,12 +1,18 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { Menu, LogOut, User, Bell, Settings, ChevronDown } from 'lucide-react';
+import { Menu, LogOut, User, Bell, Settings, ChevronDown, Sidebar } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
   onMenuToggle: () => void;
+  onCondensedToggle?: () => void;
+  isSidebarCondensed?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onMenuToggle, 
+  onCondensedToggle,
+  isSidebarCondensed = false 
+}) => {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -52,6 +58,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           >
             <Menu className="w-5 h-5" />
           </button>
+          
+          {/* Desktop sidebar toggle */}
+          {onCondensedToggle && (
+            <button
+              onClick={onCondensedToggle}
+              className="hidden lg:flex p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
+              title={isSidebarCondensed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <Sidebar className="w-5 h-5" />
+            </button>
+          )}
+          
           <div className="ml-2 lg:ml-0">
             <h2 className="text-lg font-semibold text-gray-900">Ecommerce Admin</h2>
             <p className="text-xs text-gray-500 hidden sm:block">Manage your online store</p>

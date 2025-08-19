@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Package, ChevronLeft, ChevronRight, ZoomIn, X, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Package, ChevronLeft, ChevronRight, ZoomIn, X, Plus, Trash2, Settings } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { productService } from '../services/product';
 import { ProductVariant, ProductVariantFormData } from '../types/product';
@@ -372,15 +372,43 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Product Variants */}
-      {product.variants.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Product Variants</h2>
+      <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">Product Variants ({product.variants.length})</h2>
+          <button
+            onClick={() => setIsVariantModalOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center text-sm"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Variant
+          </button>
+        </div>
+
+        {product.variants.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {product.variants.map((variant, index) => (
-              <div key={variant.id || index} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-medium text-gray-900">{variant.sku}</span>
-                  <span className="font-bold text-blue-600">{formatPrice(variant.price)}</span>
+              <div key={variant.id || index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-gray-900 text-sm block truncate">{variant.sku}</span>
+                    <span className="font-bold text-blue-600 text-lg">{formatPrice(variant.price)}</span>
+                  </div>
+                  <div className="flex space-x-1 ml-2">
+                    <button
+                      onClick={() => handleEditVariant(variant)}
+                      className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      title="Edit variant"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteVariantClick(variant)}
+                      className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Delete variant"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 
                 {/* Variant Options */}
@@ -396,31 +424,50 @@ const ProductDetail: React.FC = () => {
                 )}
 
                 {/* Variant Images */}
-                {variant.images.length > 0 && (
-                  <div className="flex space-x-2 overflow-x-auto">
+                {variant.images && variant.images.length > 0 && (
+                  <div className="flex space-x-2 overflow-x-auto pb-2">
                     {variant.images.slice(0, 3).map((image, imgIndex) => (
                       <img
                         key={imgIndex}
                         src={image.imageUrl}
                         alt={`${variant.sku} ${imgIndex + 1}`}
-                        className="w-12 h-12 object-cover rounded border border-gray-200 flex-shrink-0"
+                        className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded border border-gray-200 flex-shrink-0"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
                     ))}
                     {variant.images.length > 3 && (
-                      <div className="w-12 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-xs text-gray-500 flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-xs text-gray-500 flex-shrink-0">
                         +{variant.images.length - 3}
                       </div>
                     )}
                   </div>
                 )}
+
+                {/* No Images State */}
+                {(!variant.images || variant.images.length === 0) && (
+                  <div className="flex items-center justify-center h-12 bg-gray-50 rounded border-2 border-dashed border-gray-200">
+                    <Package className="w-5 h-5 text-gray-400 mr-2" />
+                    <span className="text-xs text-gray-500">No images</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+            <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 mb-4">No variants created yet</p>
+            <button
+              onClick={() => setIsVariantModalOpen(true)}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Create your first variant
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Product Options */}
       {product.options.length > 0 && (
@@ -511,6 +558,58 @@ const ProductDetail: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Create Variant Modal */}
+      <Modal
+        isOpen={isVariantModalOpen}
+        onClose={() => setIsVariantModalOpen(false)}
+        title="Create Product Variant"
+        size="lg"
+      >
+        <ProductVariantForm
+          productOptions={product.options}
+          onSubmit={handleCreateVariant}
+          onCancel={() => setIsVariantModalOpen(false)}
+          isLoading={createVariantMutation.isPending}
+        />
+      </Modal>
+
+      {/* Edit Variant Modal */}
+      <Modal
+        isOpen={isEditVariantModalOpen}
+        onClose={() => {
+          setIsEditVariantModalOpen(false);
+          setSelectedVariant(null);
+        }}
+        title="Edit Product Variant"
+        size="lg"
+      >
+        <ProductVariantForm
+          variant={selectedVariant || undefined}
+          productOptions={product.options}
+          onSubmit={handleUpdateVariant}
+          onCancel={() => {
+            setIsEditVariantModalOpen(false);
+            setSelectedVariant(null);
+          }}
+          isLoading={updateVariantMutation.isPending}
+        />
+      </Modal>
+
+      {/* Delete Variant Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteVariantDialogOpen}
+        onClose={() => {
+          setIsDeleteVariantDialogOpen(false);
+          setSelectedVariant(null);
+        }}
+        onConfirm={handleDeleteVariant}
+        title="Delete Variant"
+        message={`Are you sure you want to delete the variant "${selectedVariant?.sku}"? This action cannot be undone.`}
+        confirmText="Delete"
+        type="danger"
+        isLoading={deleteVariantMutation.isPending}
+      />
     </div>
   );
 };

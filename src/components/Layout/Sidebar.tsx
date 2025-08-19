@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -10,23 +10,34 @@ import {
   ChevronRight,
   X,
   Tag,
+  Menu,
 } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  isCondensed?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false }) => {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isMarketingOpen, setIsMarketingOpen] = useState(false);
+  const location = useLocation();
 
   const toggleProducts = useCallback(() => {
     setIsProductsOpen(prev => !prev);
   }, []);
+
   const toggleMarketing = useCallback(() => {
     setIsMarketingOpen(prev => !prev);
   }, []);
+
+  const handleNavClick = useCallback(() => {
+    // Close sidebar on mobile when nav item is clicked
+    if (window.innerWidth < 1024) {
+      onToggle();
+    }
+  }, [onToggle]);
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -43,6 +54,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     { path: '/marketing/coupons', label: 'Coupons' },
   ];
 
+  // Check if current path matches any product setup routes
+  const isProductSetupActive = ['/categories', '/brands'].some(path => 
+    location.pathname.startsWith(path)
+  );
+
+  // Check if current path matches any marketing routes
+  const isMarketingActive = ['/marketing'].some(path => 
+    location.pathname.startsWith(path)
+  );
+
+  // Auto-expand sections based on current route
+  React.useEffect(() => {
+    if (isProductSetupActive) {
+      setIsProductsOpen(true);
+    }
+    if (isMarketingActive) {
+      setIsMarketingOpen(true);
+    }
+  }, [isProductSetupActive, isMarketingActive]);
+
   return (
     <>
       {/* Mobile overlay */}
@@ -56,47 +87,61 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out
+          fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-200 transition-all duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:static lg:z-auto
-          w-64
+          ${isCondensed ? 'w-16' : 'w-64'}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-200">
-          <div className="space-x-2">
-            <img
-              src="/vels-logo.png"
-              alt="logo"
-              className="w-32 h-auto sm:w-40 md:w-48 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
+        <div className={`flex items-center justify-between p-3 border-b border-gray-200 ${isCondensed ? 'px-2' : ''}`}>
+          <div className={`space-x-2 ${isCondensed ? 'hidden' : ''}`}>
+            {!isCondensed && (
+              <img
+                src="/vels-logo.png"
+                alt="logo"
+                className="w-32 h-auto sm:w-40 md:w-48 object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
           </div>
+          {isCondensed && (
+            <div className="w-full flex justify-center">
+              <Menu className="w-6 h-6 text-gray-600" />
+            </div>
+          )}
           <button
             onClick={onToggle}
-            className="p-2 rounded-md hover:bg-gray-100 lg:hidden"
+            className={`p-2 rounded-md hover:bg-gray-100 transition-colors ${isCondensed ? 'lg:block' : 'lg:hidden'}`}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className={`p-4 space-y-2 ${isCondensed ? 'px-2' : ''}`}>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={handleNavClick}
               className={({ isActive }) =>
-                `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                `group flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 ${isActive
                   ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                   : 'text-gray-700 hover:bg-gray-100'
-                }`
+                } ${isCondensed ? 'justify-center px-2' : ''}`
               }
+              title={isCondensed ? item.label : ''}
             >
-              <item.icon className="w-5 h-5 mr-3" />
-              {item.label}
+              <item.icon className={`w-5 h-5 ${isCondensed ? '' : 'mr-3'}`} />
+              {!isCondensed && item.label}
+              {isCondensed && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  {item.label}
+                </div>
+              )}
             </NavLink>
           ))}
 
@@ -104,33 +149,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           <div>
             <button
               onClick={toggleProducts}
-              className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+              className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors ${
+                isProductSetupActive ? 'bg-blue-50 text-blue-700' : ''
+              } ${isCondensed ? 'justify-center px-2' : ''}`}
+              title={isCondensed ? 'Product Setup' : ''}
             >
-              <div className="flex items-center">
-                <Tag className="w-5 h-5 mr-3" />
-                Product Setup
+              <div className={`flex items-center ${isCondensed ? 'justify-center' : ''}`}>
+                <Tag className={`w-5 h-5 ${isCondensed ? '' : 'mr-3'}`} />
+                {!isCondensed && 'Product Setup'}
               </div>
-              {isProductsOpen ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
+              {!isCondensed && (
+                <>
+                  {isProductsOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </>
+              )}
+              {isCondensed && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  Product Setup
+                </div>
               )}
             </button>
 
-            {isProductsOpen && (
-              <div className="ml-8 mt-1 space-y-1">
+            {isProductsOpen && !isCondensed && (
+              <div className="ml-8 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
                 {productSubItems.map((item) => (
                   <NavLink
                     key={item.path}
                     to={item.path}
-                    // className={({ isActive }) =>
-                    //   `block px-3 py-2 rounded-lg text-sm transition-colors ${isActive
-                    //     ? 'bg-blue-50 text-blue-700'
-                    //     : 'text-gray-600 hover:bg-gray-100'
-                    //   }`
-                    // }
+                    onClick={handleNavClick}
                     className={({ isActive }) =>
-                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 ${isActive
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                       }`
@@ -146,27 +198,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           <div>
             <button
               onClick={toggleMarketing}
-              className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+              className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors ${
+                isMarketingActive ? 'bg-blue-50 text-blue-700' : ''
+              } ${isCondensed ? 'justify-center px-2' : ''}`}
+              title={isCondensed ? 'Marketing' : ''}
             >
-              <div className="flex items-center">
-                <Megaphone className="w-5 h-5 mr-3" />
-                Marketing
+              <div className={`flex items-center ${isCondensed ? 'justify-center' : ''}`}>
+                <Megaphone className={`w-5 h-5 ${isCondensed ? '' : 'mr-3'}`} />
+                {!isCondensed && 'Marketing'}
               </div>
-              {isMarketingOpen ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
+              {!isCondensed && (
+                <>
+                  {isMarketingOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </>
+              )}
+              {isCondensed && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  Marketing
+                </div>
               )}
             </button>
 
-            {isMarketingOpen && (
-              <div className="ml-8 mt-1 space-y-1">
+            {isMarketingOpen && !isCondensed && (
+              <div className="ml-8 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
                 {marketingSubItems.map((item) => (
                   <NavLink
                     key={item.path}
                     to={item.path}
+                    onClick={handleNavClick}
                     className={({ isActive }) =>
-                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                      `flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 ${isActive
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                       }`
