@@ -3,10 +3,10 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Trash2, X, Star } from 'lucide-react';
-import { ProductFormData, Product, ProductImage, ProductSpecificationGroup } from '../types/product';
+import { Plus, Trash2, X } from 'lucide-react';
+import { ProductFormData, Product } from '../types/product';
 import { brandService } from '../services/brand';
-import { productTypeService } from '../services/productType';
+import { categoryService } from '../services/category';
 import CustomSelect from './CustomSelect';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -22,29 +22,28 @@ const productSchema = yup.object({
     .min(2, 'Slug must be at least 2 characters')
     .max(200, 'Slug must be less than 200 characters')
     .matches(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
-  brandId: yup.string().required('Brand is required'),
-  productTypeId: yup.string().required('Product type is required'),
-  price: yup
-    .number()
-    .required('Price is required')
-    .min(0, 'Price must be 0 or greater'),
-  stock: yup
-    .number()
-    .required('Stock is required')
-    .min(0, 'Stock must be 0 or greater'),
   description: yup
     .string()
     .required('Description is required')
     .min(10, 'Description must be at least 10 characters'),
-  imageUrls: yup
+  brandId: yup.string().required('Brand is required'),
+  categoryId: yup.string().required('Category is required'),
+  options: yup
     .array()
     .of(
       yup.object({
-        imageUrl: yup.string().required('Image URL is required').url('Must be a valid URL'),
-        isPrimary: yup.boolean().required(),
+        name: yup.string().required('Option name is required'),
+        values: yup
+          .array()
+          .of(
+            yup.object({
+              value: yup.string().required('Option value is required'),
+            })
+          )
+          .min(1, 'At least one option value is required'),
       })
     )
-    .min(1, 'At least one image is required'),
+    .min(0),
   specificationGroups: yup
     .array()
     .of(
@@ -61,7 +60,7 @@ const productSchema = yup.object({
           .min(1, 'At least one specification is required'),
       })
     )
-    .min(1, 'At least one specification group is required'),
+    .min(0),
 });
 
 interface ProductFormProps {
@@ -77,8 +76,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
   const {
     register,
     handleSubmit,
@@ -92,12 +89,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
     defaultValues: {
       name: '',
       slug: '',
-      brandId: '',
-      productTypeId: '',
-      price: 0,
-      stock: 0,
       description: '',
-      imageUrls: [{ imageUrl: '', isPrimary: true }],
+      brandId: '',
+      categoryId: '',
+      options: [],
       specificationGroups: [
         {
           name: '',
@@ -108,12 +103,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
   });
 
   const {
-    fields: imageFields,
-    append: appendImage,
-    remove: removeImage,
+    fields: optionFields,
+    append: appendOption,
+    remove: removeOption,
   } = useFieldArray({
     control,
-    name: 'imageUrls',
+    name: 'options',
   });
 
   const {
@@ -126,17 +121,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
   });
 
   const watchName = watch('name');
-  const watchImageUrls = watch('imageUrls');
 
-  // Fetch brands and product types
+  // Fetch brands and categories
   const { data: brands, isLoading: brandsLoading } = useQuery({
     queryKey: ['brands'],
     queryFn: brandService.getBrands,
   });
 
-  const { data: productTypes, isLoading: productTypesLoading } = useQuery({
-    queryKey: ['product-types'],
-    queryFn: productTypeService.getProductTypes,
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: categoryService.getAllCategories,
   });
 
   // Auto-generate slug from name
@@ -152,46 +146,40 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [watchName, setValue, product]);
 
-  // Update image previews
-  useEffect(() => {
-    const previews = watchImageUrls?.map(img => img.imageUrl || '') || [];
-    setImagePreviews(previews);
-  }, [watchImageUrls]);
-
   useEffect(() => {
     if (product) {
       reset({
         name: product.name,
         slug: product.slug,
-        brandId: product.brand.id,
-        productTypeId: product.productType.id,
-        price: product.price,
-        stock: product.stock,
         description: product.description,
-        imageUrls: product.image.length > 0 ? product.image : [{ imageUrl: '', isPrimary: true }],
-        specificationGroups: product.specificationGroup.length > 0 
-          ? product.specificationGroup 
+        brandId: product.brand.id,
+        categoryId: product.category.id,
+        options: product.options.length > 0 ? product.options : [],
+        specificationGroups: product.specificationGroups.length > 0 
+          ? product.specificationGroups 
           : [{ name: '', specifications: [{ attributeName: '', attributeValue: '' }] }],
       });
     }
   }, [product, reset]);
 
   const handleFormSubmit = (data: ProductFormData) => {
-    // Ensure at least one image is marked as primary
-    const hasPrimary = data.imageUrls.some(img => img.isPrimary);
-    if (!hasProperty && data.imageUrls.length > 0) {
-      data.imageUrls[0].isPrimary = true;
-    }
     onSubmit(data);
   };
 
-  const handleSetPrimaryImage = useCallback((index: number) => {
-    const currentImages = watch('imageUrls');
-    const updatedImages = currentImages.map((img, i) => ({
-      ...img,
-      isPrimary: i === index,
-    }));
-    setValue('imageUrls', updatedImages);
+  const addOptionValue = useCallback((optionIndex: number) => {
+    const currentOptions = watch('options');
+    const updatedOptions = [...currentOptions];
+    updatedOptions[optionIndex].values.push({ value: '' });
+    setValue('options', updatedOptions);
+  }, [watch, setValue]);
+
+  const removeOptionValue = useCallback((optionIndex: number, valueIndex: number) => {
+    const currentOptions = watch('options');
+    const updatedOptions = [...currentOptions];
+    if (updatedOptions[optionIndex].values.length > 1) {
+      updatedOptions[optionIndex].values.splice(valueIndex, 1);
+      setValue('options', updatedOptions);
+    }
   }, [watch, setValue]);
 
   const addSpecification = useCallback((groupIndex: number) => {
@@ -218,12 +206,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
     label: brand.name,
   })) || [];
 
-  const productTypeOptions = productTypes?.map(type => ({
-    value: type.id,
-    label: type.name,
+  const categoryOptions = categories?.map(category => ({
+    value: category.id,
+    label: category.name,
   })) || [];
 
-  if (brandsLoading || productTypesLoading) {
+  if (brandsLoading || categoriesLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <LoadingSpinner size="md" />
@@ -234,7 +222,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       {/* Basic Information */}
-      <div className="bg-gray-50 p-4 rounded-lg">
+      <div className="p-2 rounded-lg">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Product Name */}
@@ -300,18 +288,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
             )}
           </div>
 
-          {/* Product Type */}
+          {/* Category */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Product Type *
+              Category *
             </label>
             <div className="block sm:hidden">
               <select
-                {...register('productTypeId')}
+                {...register('categoryId')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               >
-                <option value="">Select a product type</option>
-                {productTypeOptions.map((option) => (
+                <option value="">Select a category</option>
+                {categoryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -320,52 +308,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
             <div className="hidden sm:block">
               <CustomSelect
-                options={[{ value: '', label: 'Select a product type' }, ...productTypeOptions]}
-                value={watch('productTypeId')}
-                onChange={(value) => setValue('productTypeId', value)}
-                placeholder="Select a product type"
+                options={[{ value: '', label: 'Select a category' }, ...categoryOptions]}
+                value={watch('categoryId')}
+                onChange={(value) => setValue('categoryId', value)}
+                placeholder="Select a category"
               />
             </div>
-            {errors.productTypeId && (
-              <p className="mt-1 text-sm text-red-600">{errors.productTypeId.message}</p>
-            )}
-          </div>
-
-          {/* Price */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price *
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-              <input
-                {...register('price')}
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="999.99"
-                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              />
-            </div>
-            {errors.price && (
-              <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-            )}
-          </div>
-
-          {/* Stock */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Stock *
-            </label>
-            <input
-              {...register('stock')}
-              type="number"
-              min="0"
-              placeholder="100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            />
-            {errors.stock && (
-              <p className="mt-1 text-sm text-red-600">{errors.stock.message}</p>
+            {errors.categoryId && (
+              <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
             )}
           </div>
         </div>
@@ -387,93 +337,75 @@ const ProductForm: React.FC<ProductFormProps> = ({
         </div>
       </div>
 
-      {/* Images */}
-      <div className="bg-gray-50 p-4 rounded-lg">
+      {/* Product Options */}
+      <div className="p-2 rounded-lg">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">Product Images</h3>
+          <h3 className="text-lg font-medium text-gray-900">Product Options</h3>
           <button
             type="button"
-            onClick={() => appendImage({ imageUrl: '', isPrimary: false })}
+            onClick={() => appendOption({ name: '', values: [{ value: '' }] })}
             className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 transition-colors flex items-center"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Add Image
+            Add Option
           </button>
         </div>
 
         <div className="space-y-4">
-          {imageFields.map((field, index) => (
+          {optionFields.map((field, optionIndex) => (
             <div key={field.id} className="border border-gray-200 rounded-lg p-4 bg-white">
-              <div className="flex items-start gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL *
-                  </label>
-                  <input
-                    {...register(`imageUrls.${index}.imageUrl`)}
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  />
-                  {errors.imageUrls?.[index]?.imageUrl && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.imageUrls[index]?.imageUrl?.message}
-                    </p>
-                  )}
-                </div>
+              <div className="flex items-center justify-between mb-4">
+                <input
+                  {...register(`options.${optionIndex}.name`)}
+                  type="text"
+                  placeholder="Option name (e.g., Color, Size)"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors mr-4"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeOption(optionIndex)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
 
-                {/* Image Preview */}
-                {imagePreviews[index] && (
-                  <div className="relative">
-                    <img
-                      src={imagePreviews[index]}
-                      alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border border-gray-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Option Values</label>
+                {watch(`options.${optionIndex}.values`)?.map((_, valueIndex) => (
+                  <div key={valueIndex} className="flex items-center gap-2">
+                    <input
+                      {...register(`options.${optionIndex}.values.${valueIndex}.value`)}
+                      type="text"
+                      placeholder="Option value (e.g., Red, Large)"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
-                    {watch(`imageUrls.${index}.isPrimary`) && (
-                      <div className="absolute -top-2 -right-2 bg-yellow-500 text-white rounded-full p-1">
-                        <Star className="w-3 h-3 fill-current" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSetPrimaryImage(index)}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      watch(`imageUrls.${index}.isPrimary`)
-                        ? 'bg-yellow-500 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Primary
-                  </button>
-                  {imageFields.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => removeImage(index)}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      onClick={() => removeOptionValue(optionIndex, valueIndex)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      disabled={watch(`options.${optionIndex}.values`)?.length <= 1}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <X className="w-4 h-4" />
                     </button>
-                  )}
-                </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addOptionValue(optionIndex)}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Value
+                </button>
               </div>
             </div>
           ))}
         </div>
-        {errors.imageUrls && (
-          <p className="mt-2 text-sm text-red-600">{errors.imageUrls.message}</p>
-        )}
       </div>
 
       {/* Specifications */}
-      <div className="bg-gray-50 p-4 rounded-lg">
+      <div className="p-2 rounded-lg">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">Specifications</h3>
           <button
@@ -511,11 +443,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   </button>
                 )}
               </div>
-              {errors.specificationGroups?.[groupIndex]?.name && (
-                <p className="mb-2 text-sm text-red-600">
-                  {errors.specificationGroups[groupIndex]?.name?.message}
-                </p>
-              )}
 
               <div className="space-y-3">
                 {watch(`specificationGroups.${groupIndex}.specifications`)?.map((_, specIndex) => (
@@ -554,9 +481,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
           ))}
         </div>
-        {errors.specificationGroups && (
-          <p className="mt-2 text-sm text-red-600">{errors.specificationGroups.message}</p>
-        )}
       </div>
 
       {/* Form Actions */}
