@@ -12,7 +12,7 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('auth-token');
+    const token = Cookies.get('AUTH-TOKEN');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,8 +26,12 @@ api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => response,
   (error: AxiosError<ApiError>) => {
     if (error.response?.status === 401) {
-      Cookies.remove('auth-token');
-      window.location.href = '/login';
+      // Clear auth token on 401
+      Cookies.remove('AUTH-TOKEN');
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -41,16 +45,40 @@ export const apiCall = async <T>(
   params?: any
 ): Promise<T> => {
   try {
-    const response = await api.request<ApiResponse<T>>({
+    const response = await api.request<ApiResponse<{ message: string; data: T }>>({
       method,
       url,
       data,
       params,
     });
-    return response.data.data;
+    
+    // Handle the nested response structure from your API
+    const responseData = response.data.data;
+    
+    // Check if the inner response indicates an error
+    if (responseData && typeof responseData === 'object' && 'message' in responseData) {
+      if (responseData.message === 'error') {
+        throw new Error(responseData.data as string || 'An error occurred');
+      }
+      // Return the inner data if it's a success
+      return responseData.data as T;
+    }
+    
+    // Return the data directly if it's not in the nested format
+    return responseData as T;
   } catch (error) {
     const axiosError = error as AxiosError<ApiError>;
-    throw new Error(axiosError.response?.data?.message || 'An error occurred');
+    
+    // If it's already a custom error, re-throw it
+    if (error instanceof Error && !(error as any).response) {
+      throw error;
+    }
+    
+    // Handle axios errors
+    const errorMessage = axiosError.response?.data?.message || 
+                        axiosError.message || 
+                        'An error occurred';
+    throw new Error(errorMessage);
   }
 };
 

@@ -5,13 +5,33 @@ export const authService = {
   // Check if user is authenticated
   me: () => apiCall<User>('GET', '/auth/me'),
 
-  // Request OTP
-  requestOTP: (identifier: string) =>
-    apiCall<{}>('POST', '/auth/request-otp', null, { identifier }),
+  // Generate OTP for both sign-in and sign-up
+  generateOTP: (email: string) =>
+    apiCall<{
+      otpIdentifierInfo: Array<{
+        requestId: string;
+        email: string;
+        expiryDate: string;
+        tooltipText: string;
+      }>;
+      toastMessage: string;
+    }>('POST', '/auth/otp/generate', { email }),
 
-  // Verify OTP
-  verifyOTP: (otp: string) =>
-    apiCall<User>('POST', '/auth/verify-otp', null, { otp }),
+  // Verify OTP for sign-in
+  verifySignInOTP: (otp: string, requestId: string, email: string) =>
+    apiCall<string>('POST', '/auth/admin/sign-in/verify-otp', {
+      otp,
+      requestId,
+      email,
+    }),
+
+  // Verify OTP for sign-up
+  verifySignUpOTP: (otp: string, requestId: string, email: string) =>
+    apiCall<string>('POST', '/auth/admin/sign-up/verify-otp', {
+      otp,
+      requestId,
+      email,
+    }),
 
   // Logout
   logout: () => apiCall<{}>('POST', '/auth/logout'),

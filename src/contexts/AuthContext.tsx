@@ -22,11 +22,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     data: user,
     isLoading,
     refetch,
+    error,
   } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: authService.me,
-    retry: false,
+    retry: (failureCount, error: any) => {
+      // Don't retry if it's a 401 (unauthorized) error
+      if (error?.message?.includes('401') || error?.status === 401) {
+        return false;
+      }
+      return failureCount < 1;
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const login = useCallback((userData: User) => {
@@ -39,11 +47,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      Cookies.remove('auth-token');
+      // Clear auth token cookie
+      Cookies.remove('AUTH-TOKEN');
+      // Clear all cached data
       queryClient.setQueryData(['auth', 'me'], null);
       queryClient.clear();
+      // Redirect to login
+      window.location.href = '/login';
     }
   }, [queryClient]);
+
+  // If there's an auth error, clear the user data
+  React.useEffect(() => {
+    if (error) {
+      queryClient.setQueryData(['auth', 'me'], null);
+    }
+  }, [error, queryClient]);
 
   const contextValue = useMemo(() => ({
     user: user || null,

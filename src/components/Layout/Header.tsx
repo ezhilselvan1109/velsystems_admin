@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { Menu, LogOut, User, Bell, Settings, ChevronDown, Sidebar } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -20,8 +21,10 @@ const Header: React.FC<HeaderProps> = ({
   const handleLogout = useCallback(async () => {
     try {
       await logout();
+      toast.success('Logged out successfully');
     } catch (error) {
       console.error('Logout failed:', error);
+      toast.error('Logout failed');
     }
   }, [logout]);
 
@@ -114,13 +117,13 @@ const Header: React.FC<HeaderProps> = ({
               <div className="px-4 py-3 border-b bg-gray-50 sm:bg-white">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium">
-                    {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'A'}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-gray-900 truncate">
-                      {user?.name || 'Admin'}
+                      {user ? `${user.firstName} ${user.lastName}` : 'Admin'}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">Administrator</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.role || 'Administrator'}</p>
                   </div>
                 </div>
               </div>

@@ -1,9 +1,16 @@
 export interface User {
   id: string;
-  email?: string;
-  phone?: string;
-  name: string;
+  email: string;
+  phoneNumber?: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
   role: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+  addresses: any[];
+  reviews: any[];
 }
 
 export interface AuthResponse {
@@ -12,9 +19,16 @@ export interface AuthResponse {
 }
 
 export interface LoginFormData {
-  identifier: string;
+  email: string;
 }
 
 export interface OTPFormData {
   otp: string;
+}
+
+export interface OTPIdentifierInfo {
+  requestId: string;
+  email: string;
+  expiryDate: string;
+  tooltipText: string;
 }

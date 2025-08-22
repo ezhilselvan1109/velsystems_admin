@@ -41,7 +41,7 @@ function App() {
                 <Route
                   path="/*"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="USER">
                       <Layout />
                     </ProtectedRoute>
                   }
