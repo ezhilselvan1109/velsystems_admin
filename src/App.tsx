@@ -18,6 +18,7 @@ const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const Orders = lazy(() => import('./pages/Orders'));
 const Coupons = lazy(() => import('./pages/Coupons'));
+const ContactMessages = lazy(() => import('./pages/ContactMessages'));
 
 // Create a client
 const queryClient = new QueryClient({
@@ -54,6 +55,7 @@ function App() {
                   <Route path="inventory" element={<Inventory />} />
                   <Route path="orders" element={<Orders />} />
                   <Route path="marketing/coupons" element={<Coupons />} />
+                  <Route path="contact-messages" element={<ContactMessages />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               </Routes>

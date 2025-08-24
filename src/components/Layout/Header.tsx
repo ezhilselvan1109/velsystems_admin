@@ -109,9 +109,9 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Animated Responsive Dropdown */}
             <div
-              className={`absolute right-0 mt-2 w-60 sm:w-55 bg-white border rounded-xl shadow-lg z-50 transform transition-all duration-200 origin-top 
+              className={`absolute right-0 mt-2 w-60 sm:w-55 bg-white border rounded-lg shadow-lg z-50 transform transition-all duration-200 origin-top 
               ${dropdownOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-2 pointer-events-none'}
-              /* Mobile-friendly: full width */ sm:right-2 sm:mt-2 sm:rounded-xl max-h-[80vh] overflow-y-auto`}
+              /* Mobile-friendly: full width */ sm:right-2 sm:mt-2 sm:rounded-lg max-h-[80vh] overflow-y-auto`}
             >
               {/* User Info Header */}
               <div className="px-4 py-3 border-b bg-gray-50 sm:bg-white">

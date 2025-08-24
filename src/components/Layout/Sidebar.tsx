@@ -15,6 +15,7 @@ import {
   Users,
   BarChart3,
   FileText,
+  MessageSquare,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -57,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isCondensed = false
     { path: '/products', icon: Package, label: 'Products' },
     { path: '/inventory', icon: Archive, label: 'Inventory' },
     { path: '/orders', icon: ShoppingCart, label: 'Orders' },
+    { path: '/contact-messages', icon: MessageSquare, label: 'Contact Messages' },
   ];
 
   const productSubItems = [
